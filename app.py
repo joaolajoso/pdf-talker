@@ -41,8 +41,32 @@ def get_vectorstore(text_chunks):
 
 def get_conversation_chain(vectorstore):
     #llm = ChatOpenAI()
-    llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
+    #llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
     #llm = 'a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035fa1f49bfd344fe076074c8eea'
+    tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf", use_auth_token=True)
+
+    model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
+                                                 device_map='auto',
+                                                 torch_dtype=torch.float16,
+                                                 use_auth_token=True,
+                                                 load_in_8bit=True
+                                                 )
+    
+    
+    
+    pipe = pipeline("text-generation",
+                    model=model,
+                    tokenizer= tokenizer,
+                    torch_dtype=torch.bfloat16,
+                    device_map="auto",
+                    max_new_tokens = 512,
+                    do_sample=True,
+                    top_k=30,
+                    num_return_sequences=1,
+                    eos_token_id=tokenizer.eos_token_id
+                    )
+    
+    llm=HuggingFacePipeline(pipeline=pipe, model_kwargs={'temperature':0.1})
 
     memory = ConversationBufferMemory(
         memory_key='chat_history', return_messages=True)
