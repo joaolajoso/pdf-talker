@@ -9,6 +9,10 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 from langchain.llms import HuggingFaceHub
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from huggingface_hub import notebook_login
+import torch
+
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -43,6 +47,8 @@ def get_conversation_chain(vectorstore):
     #llm = ChatOpenAI()
     #llm = HuggingFaceHub(repo_id="google/flan-t5-xxl", model_kwargs={"temperature":0.5, "max_length":512})
     #llm = 'a16z-infra/llama7b-v2-chat:4f0a4744c7295c024a1de15e1a63c880d3da035fa1f49bfd344fe076074c8eea'
+    
+    notebook_login()
     tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf", use_auth_token=True)
 
     model = AutoModelForCausalLM.from_pretrained("meta-llama/Llama-2-7b-chat-hf",
@@ -125,7 +131,7 @@ def main():
                 # create conversation chain
                 st.session_state.conversation = get_conversation_chain(
                     vectorstore)
-            st.write("Analisado!")
+        st.write("Analisado!")
 
             
 
